@@ -1,5 +1,6 @@
 (() => {
     'use strict';
+    const azure = require('azure-storage');
     const express = require('express');
     const bodyParser = require('body-parser');
 
@@ -16,10 +17,10 @@
         .get((req, res) => {
             res.send({ message: 'Api rodando =)' }).end();
         })
-        .post((req, res) => {
+        .post(async (req, res) => {
             try {
                 // Cria o Blob Service
-                var blobSvc = azure.createBlobService('CONNECTION STRING');
+                var blobSvc = azure.createBlobService('CONNECTION_STRING');
 
                 // Define o nome do arquivo a ser gerado
                 // É interessante gerar sempre um nome único, utilizando Guid por exemplo
@@ -38,15 +39,16 @@
                 var buffer = new Buffer(matches[2], 'base64');
 
                 // Salva a imagem
-                await blobSvc.createBlockBlobFromText('MEUCONTAINER', filename, buffer, { contentType: type }, function (error, result, response) {
+                await blobSvc.createBlockBlobFromText('CONTAINER', filename, buffer, { contentType: type }, function (error, result, response) {
                     if (error) {
                         console.log(error);
                     }
                 });
 
                 // Retorna sucesso
-                res.status(200).send({ image: 'https://MEUSTORAGEACCOUNT.blob.core.windows.net/MEUCONTAINER/' + filename });
+                res.status(200).send({ image: 'https://STORAGE.blob.core.windows.net/CONTAINER/' + filename });
             } catch (e) {
+                console.log(e);
                 res.status(500).send({ message: 'Falha ao processar sua requisição' });
             }
         });
